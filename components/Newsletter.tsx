@@ -43,7 +43,7 @@ export default function Newsletter() {
 
     return (
         <section className="py-32 bg-[#050505] relative overflow-hidden border-t border-white/5">
-            <div className="absolute inset-0 opacity-40 hidden md:block">
+            <div className="absolute inset-0 opacity-40">
                 <DarkVeil
                     hueShift={280}
                     speed={0.2}
