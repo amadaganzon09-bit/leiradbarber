@@ -38,22 +38,23 @@ export default function Team() {
         offset: ["start start", "end end"]
     });
 
-    // Spring for smooth, inertia-based scrolling
+    // Snappier spring for better mobile responsiveness
     const smoothProgress = useSpring(scrollYProgress, {
-        stiffness: 70,
+        stiffness: 100,
         damping: 30,
+        mass: 0.5,
         restDelta: 0.001
     });
 
     return (
-        <section ref={sectionRef} className="relative h-[500vh] bg-[#050505] overflow-clip">
-            <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+        <section ref={sectionRef} className="relative h-[400vh] bg-[#050505] overflow-visible">
+            <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden will-change-transform">
 
                 {/* Clean Background Text */}
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center opacity-[0.03] pointer-events-none select-none">
                     <motion.h2
                         style={{ x: useTransform(smoothProgress, [0, 1], ["10%", "-10%"]) }}
-                        className="text-[25vw] font-black text-white italic whitespace-nowrap"
+                        className="text-[20vw] md:text-[25vw] font-black text-white italic whitespace-nowrap"
                     >
                         THE CRAFTSMEN
                     </motion.h2>
@@ -89,17 +90,25 @@ function TeamSlide({ member, index, total, progress }: { member: any, index: num
     const start = index / total;
     const end = (index + 1) / total;
 
-    // Visibility and Layering
-    // We use a clean fade and scale-up reveal to avoid 'combining' overlaps
-    const opacity = useTransform(progress, [start - 0.1, start, end - 0.05, end], [0, 1, 1, 0]);
-    const scale = useTransform(progress, [start - 0.1, start, end], [0.95, 1, 1.05]);
+    // Simplified transforms for better mobile performance
+    const opacity = useTransform(progress, [start - 0.05, start, end - 0.05, end], [0, 1, 1, 0]);
+    const x = useTransform(progress, [start - 0.05, start, end, end + 0.05], ["5%", "0%", "0%", "-5%"]);
 
-    // Translation to keep them separate
-    const x = useTransform(progress, [start - 0.1, start, end, end + 0.1], ["20%", "0%", "0%", "-20%"]);
+    // Visibility check - completely drop from render if not near active range
+    const display = useTransform(progress, (p: number) => {
+        if (p < start - 0.1 || p > end + 0.1) return "none";
+        return "flex";
+    });
 
     return (
         <motion.div
-            style={{ opacity, scale, x, pointerEvents: index === 0 ? "auto" : "none" }}
+            style={{
+                opacity,
+                x,
+                display,
+                pointerEvents: index === 0 ? "auto" : "none",
+                willChange: "transform, opacity"
+            }}
             className="absolute inset-0 w-full h-full flex items-center justify-center z-10"
         >
             <div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center gap-12 md:gap-24">

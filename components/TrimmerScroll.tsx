@@ -19,6 +19,7 @@ export default function TrimmerScroll() {
     // keeping local loading state just for internal canvas logic if needed, but not for UI
     const [internalLoading, setInternalLoading] = useState(true);
     const [scrollProgress, setScrollProgress] = useState(0);
+    const canvasSizeRef = useRef({ width: 0, height: 0, dpr: 1 });
 
     // Scroll logic
     const { scrollYProgress } = useScroll({
@@ -36,22 +37,21 @@ export default function TrimmerScroll() {
 
         if (!canvas || !ctx || !img) return;
 
-        const dpr = Math.min(window.devicePixelRatio || 1, 4);
-        const rect = canvas.getBoundingClientRect();
+        const { width, height, dpr } = canvasSizeRef.current;
+        if (width === 0 || height === 0) return;
 
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-
+        ctx.restore();
+        ctx.save();
         ctx.scale(dpr, dpr);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
-        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.clearRect(0, 0, width, height);
 
-        const scale = Math.max(rect.width / img.width, rect.height / img.height) * 1.1;
+        const scale = Math.max(width / img.width, height / img.height) * 1.1;
         const w = img.width * scale;
         const h = img.height * scale;
-        const x = (rect.width - w) / 2;
-        const y = (rect.height - h) / 2;
+        const x = (width - w) / 2;
+        const y = (height - h) / 2;
 
         ctx.drawImage(img, x, y, w, h);
     }, [images]);
@@ -102,6 +102,29 @@ export default function TrimmerScroll() {
         loadImages();
     }, [setGlobalProgress]);
 
+    // Handle Resize and Initial Size
+    useEffect(() => {
+        const handleResize = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 3); // Capped to 3x for performance
+
+            canvasSizeRef.current = { width: rect.width, height: rect.height, dpr };
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            if (!internalLoading && images.length > 0) {
+                drawFrame(Math.round(frameIndex.get()));
+            }
+        };
+
+        handleResize(); // Initial call
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [internalLoading, images, frameIndex, drawFrame]);
+
     // Update canvas on scroll
     useMotionValueEvent(frameIndex, "change", (latest) => {
         const index = Math.round(latest);
@@ -114,17 +137,6 @@ export default function TrimmerScroll() {
             drawFrame(0);
         }
     }, [internalLoading, images, drawFrame]);
-
-    // Handle Resize
-    useEffect(() => {
-        const handleResize = () => {
-            if (!internalLoading && images.length > 0) {
-                drawFrame(Math.round(frameIndex.get()));
-            }
-        }
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [internalLoading, images, frameIndex, drawFrame]);
 
     return (
         <div id="home" ref={containerRef} className="relative w-full bg-[#050505]" style={{ height: SCROLL_HEIGHT }}>

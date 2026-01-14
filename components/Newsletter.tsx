@@ -12,6 +12,9 @@ export default function Newsletter() {
     const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
     const { showToast } = useToast();
 
+    // Responsive resolution scale for DarkVeil
+    const resolutionScale = typeof window !== 'undefined' && window.innerWidth < 768 ? 0.5 : 0.8;
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -51,6 +54,7 @@ export default function Newsletter() {
                     scanlineIntensity={0.1}
                     scanlineFrequency={2.0}
                     warpAmount={0.3}
+                    resolutionScale={resolutionScale}
                 />
             </div>
             <div className="absolute inset-0 bg-black/20 pointer-events-none" />

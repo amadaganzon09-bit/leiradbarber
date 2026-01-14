@@ -117,8 +117,23 @@ const DotGrid = ({
         const spring = 0.12;
         const friction = 0.8;
         const mouseForce = 0.22;
+        let isVisible = true;
+
+        const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+        const observer = new IntersectionObserver(([entry]) => {
+            isVisible = entry.isIntersecting;
+            if (isVisible) {
+                rafId = requestAnimationFrame(draw);
+            } else {
+                cancelAnimationFrame(rafId);
+            }
+        });
+
+        if (wrapperRef.current) observer.observe(wrapperRef.current);
 
         const draw = () => {
+            if (!isVisible) return;
             const canvas = canvasRef.current;
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -188,7 +203,7 @@ const DotGrid = ({
                 ctx.arc(dot.x, dot.y, dot.size / 2, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
 
-                if (colorFactor > 0.4) {
+                if (colorFactor > 0.4 && !isMobile) {
                     ctx.shadowBlur = 12 * colorFactor;
                     ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
                 } else {
@@ -203,7 +218,10 @@ const DotGrid = ({
         };
 
         draw();
-        return () => cancelAnimationFrame(rafId);
+        return () => {
+            cancelAnimationFrame(rafId);
+            observer.disconnect();
+        };
     }, [proximity, dotSize, baseRgb, activeRgb]);
 
     useEffect(() => {

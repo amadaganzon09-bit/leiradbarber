@@ -127,9 +127,17 @@ export default function DarkVeil({
         const mesh = new Mesh(gl, { geometry, program });
 
         const resize = () => {
+            if (!parent) return;
             const w = parent.clientWidth,
                 h = parent.clientHeight;
+
+            // Set render size with resolution scale
             renderer.setSize(w * resolutionScale, h * resolutionScale);
+
+            // Force the canvas to stretch to fill the container regardless of render resolution
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+
             program.uniforms.uResolution.value.set(w * resolutionScale, h * resolutionScale);
         };
 
@@ -137,9 +145,26 @@ export default function DarkVeil({
         resize();
 
         const start = performance.now();
-        let frame = 0;
+        let frame: number;
+        let isVisible = true;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                isVisible = entry.isIntersecting;
+                if (isVisible) {
+                    resize(); // Ensure size is correct when it becomes visible
+                    frame = requestAnimationFrame(loop);
+                } else {
+                    cancelAnimationFrame(frame);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(parent);
 
         const loop = () => {
+            if (!isVisible) return;
             program.uniforms.uTime.value = ((performance.now() - start) / 1000) * speed;
             program.uniforms.uHueShift.value = hueShift;
             program.uniforms.uNoise.value = noiseIntensity;
@@ -150,10 +175,12 @@ export default function DarkVeil({
             frame = requestAnimationFrame(loop);
         };
 
-        loop();
+        // Initialize frame
+        frame = requestAnimationFrame(loop);
 
         return () => {
             cancelAnimationFrame(frame);
+            observer.disconnect();
             window.removeEventListener('resize', resize);
         };
     }, [hueShift, noiseIntensity, scanlineIntensity, speed, scanlineFrequency, warpAmount, resolutionScale]);

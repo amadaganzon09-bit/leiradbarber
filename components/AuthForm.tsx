@@ -282,8 +282,10 @@ export default function AuthForm({ type }: AuthFormProps) {
                                                 </label>
                                                 <input
                                                     name="firstName"
+                                                    id="firstName"
                                                     type="text"
                                                     placeholder="John"
+                                                    autoComplete="given-name"
                                                     required
                                                     onFocus={() => setErrors(prev => ({ ...prev, firstName: false }))}
                                                     className={clsx(
@@ -303,8 +305,10 @@ export default function AuthForm({ type }: AuthFormProps) {
                                                 </label>
                                                 <input
                                                     name="lastName"
+                                                    id="lastName"
                                                     type="text"
                                                     placeholder="Doe"
+                                                    autoComplete="family-name"
                                                     required
                                                     onFocus={() => setErrors(prev => ({ ...prev, lastName: false }))}
                                                     className={clsx(
@@ -323,7 +327,9 @@ export default function AuthForm({ type }: AuthFormProps) {
                                                 </label>
                                                 <input
                                                     name="middleName"
+                                                    id="middleName"
                                                     type="text"
+                                                    autoComplete="additional-name"
                                                     placeholder="Quincy"
                                                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-all duration-300"
                                                 />
@@ -343,8 +349,10 @@ export default function AuthForm({ type }: AuthFormProps) {
                                         </label>
                                         <input
                                             name="email"
+                                            id="email"
                                             type="email"
                                             placeholder="name@example.com"
+                                            autoComplete="email"
                                             required
                                             onFocus={() => setErrors(prev => ({ ...prev, email: false }))}
                                             className={clsx(
@@ -375,8 +383,10 @@ export default function AuthForm({ type }: AuthFormProps) {
                                                 </div>
                                                 <input
                                                     name="password"
+                                                    id="password"
                                                     type="password"
                                                     placeholder="••••••••"
+                                                    autoComplete={isLogin ? "current-password" : "new-password"}
                                                     required
                                                     onFocus={() => setErrors(prev => ({ ...prev, password: false }))}
                                                     value={isRegister ? password : undefined}
@@ -465,8 +475,10 @@ export default function AuthForm({ type }: AuthFormProps) {
                                                     </label>
                                                     <input
                                                         name="confirmPassword"
+                                                        id="confirmPassword"
                                                         type="password"
                                                         placeholder="••••••••"
+                                                        autoComplete="new-password"
                                                         required
                                                         onFocus={() => setErrors(prev => ({ ...prev, confirmPassword: false }))}
                                                         value={isRegister ? confirmPassword : undefined}
